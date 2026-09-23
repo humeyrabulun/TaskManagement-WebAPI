@@ -1,0 +1,111 @@
+{
+  "info": {
+    "_postman_id": "006f426b-7218-43d9-aa7e-7a1441db200b",
+    "name": "Todo API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58474054",
+    "_collection_link": "https://go.postman.co/collection/58474054-006f426b-7218-43d9-aa7e-7a1441db200b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Get",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5158/api/todo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5158",
+          "path": [
+            "api",
+            "todo"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5158/api/todo/4",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5158",
+          "path": [
+            "api",
+            "todo",
+            "4"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Post",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Marketten süt alınacak\", \"isCompleted\": true}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5158/api/todo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5158",
+          "path": [
+            "api",
+            "todo"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Put",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\": \"Postman ile ilk test görevim\",\r\n  \"isCompleted\": false\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5158/api/todo/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5158",
+          "path": [
+            "api",
+            "todo",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
