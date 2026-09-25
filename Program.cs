@@ -1,13 +1,19 @@
+using TodoApi.Models;
+using TodoApi.Services;
+using static TodoApi.Services.GuidService;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-// YENİ EKLENEN SATIR 1: Swagger Servisi
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<TodoService>();
+builder.Services.AddScoped<IScopedService , GuidService>();
+builder.Services.AddTransient<ITransientService, GuidService>();
+builder.Services.AddSingleton<ISingletonService, GuidService>();
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 var app = builder.Build();
 

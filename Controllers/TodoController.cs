@@ -1,80 +1,138 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Models;
+using TodoApi.Services;
 
 namespace TodoApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
 
+
     public class TodoController : ControllerBase
     {
-        private static List<Todo> _todos = new List<Todo>();
+
+        private readonly TodoService _todoService;
+        private readonly ITransientService _transient1;
+        private readonly ITransientService _transient2;
+        private readonly IScopedService _scoped1;
+        private readonly IScopedService _scoped2;
+        private readonly ISingletonService _singleton1;
+        private readonly ISingletonService _singleton2;
+
+        public TodoController(TodoService todoService,
+            ITransientService transient1,
+            ITransientService transient2,
+            IScopedService scoped1,
+            IScopedService scoped2,
+            ISingletonService singleton1,
+            ISingletonService singleton2)
+        {
+            _todoService = todoService;
+            _transient1 = transient1;
+            _transient2 = transient2;
+            _scoped1 = scoped1;
+            _scoped2 = scoped2;
+            _singleton1 = singleton1;
+            _singleton2 = singleton2;
+        }
+
 
         [HttpGet]
-        public IActionResult GetTodos([FromQuery]bool? tamamlandi, [FromQuery] string? ara)
+        public IActionResult GetTodos([FromQuery] bool? tamamlandi, [FromQuery] string? ara)
         {
-            var sorgu = _todos.AsQueryable();
+            var sonucListe = _todoService.GetTodos(tamamlandi, ara);
 
-            if(tamamlandi.HasValue)
-            {
-                sorgu = sorgu.Where(t => t.IsCompleted == tamamlandi.Value);
-
-            }
-
-            if (!string.IsNullOrWhiteSpace(ara))
-            {
-                sorgu=sorgu.Where(t=>t.Title.Contains(ara));
-            }
-
-            return Ok(sorgu.ToList());
+            return Ok(sonucListe);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetTodo(int id) { 
+        public IActionResult GetTodo(int id)
+        {
+            var sonuc = _todoService.GetTodo(id);
 
-            var todo= _todos.FirstOrDefault(t=>t.Id==id);
-            if (todo == null) return NotFound();
-
-            return Ok(todo);
+            if (sonuc == null)
+            {
+                return NotFound($"ID {id} bulunamadı");
+            }
+            return Ok(sonuc);
         }
 
         [HttpPost]
+
         public IActionResult CreateTodo(Todo newTodo)
         {
             if (string.IsNullOrWhiteSpace(newTodo.Title))
             {
-                return BadRequest("Görev Başlığı boş olamaz.")
+                return BadRequest("Görev Başlığı boş olamaz.");
             }
 
-            newTodo.Id = _todos.Any() ? _todos.Max(t => t.Id) + 1 : 1;
-            _todos.Add(newTodo);
+            try
+            {
+                var createdTodo = _todoService.CreateTodo(newTodo);
+                return CreatedAtAction(nameof(GetTodo), new { id = createdTodo.Id }, createdTodo);
+            }
+            catch (Exception ex)
+            {
 
-            return CreatedAtAction(nameof(GetTodo), new { id = newTodo.Id }, newTodo);
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpGet("lifetimes")]
+        public IActionResult GetLifetimes()
+        {
+            var sonuc = new
+            {
+                Transient = new
+                {
+                    BirinciCagri = _transient1.GetGuid(),
+                    IkinciCagri = _transient2.GetGuid()
+                },
+                Scoped = new
+                {
+                    BirinciCagri = _scoped1.GetGuid(),
+                    IkinciCagri = _scoped2.GetGuid()
+                },
+                Singleton = new
+                {
+                    BirinciCagri = _singleton1.GetGuid(),
+                    IkinciCagri = _singleton2.GetGuid()
+                }
+            };
+
+            return Ok(sonuc);
         }
 
         [HttpPut("{id}")]
         public IActionResult UpdateTodo(int id, Todo updatedTodo)
         {
-            var todo = _todos.FirstOrDefault(t => t.Id == id);
-            if (todo==null) return NotFound($"ID {id} bulunamadı");
+            var sonuc = _todoService.UpdateTodo(id, updatedTodo);
 
-            todo.Title = updatedTodo.Title;
-            todo.IsCompleted= updatedTodo.IsCompleted;
+            if (sonuc == null)
+            {
+                return NotFound($"ID{id} bulunamadı");
 
+            }
 
             return NoContent();
-        }
 
+        }
         [HttpDelete("{id}")]
         public IActionResult DeleteTodo(int id)
         {
-            var todo = _todos.FirstOrDefault(t => t.Id == id);
-            if (todo == null) return NotFound($"ID {id} bulunamadı");
 
-            _todos.Remove(todo);
+            bool isDeleted = _todoService.DeleteTodo(id);
+
+            if (!isDeleted)
+            {
+                return NotFound($"ID {id} bulunamadı");
+            }
+
+
             return NoContent();
         }
-    }
 
+    }
 }
