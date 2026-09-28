@@ -9,9 +9,12 @@ namespace TodoApi.Services
         private static List<Todo> _todos = new List<Todo>();
         private readonly AppSettings _appSettings;
 
-        public TodoService(IOptions<AppSettings> options)
+        private readonly ILogger<TodoService> _logger;
+
+        public TodoService(IOptions<AppSettings> options,ILogger<TodoService> logger)
         {
             _appSettings = options.Value;
+            _logger = logger;
         }
        
         public List<Todo>GetTodos( bool? tamamlandi, string? ara)
@@ -42,12 +45,11 @@ namespace TodoApi.Services
      
         public Todo CreateTodo(Todo newTodo)
         {
-            Console.WriteLine($"ŞU ANKİ LİMİT: {_appSettings.MaksimumTodoSayisi}");
-            Console.WriteLine($"ŞU ANKİ GÖREV SAYISI: {_todos.Count}");
-
+            _logger.LogInformation("Yeni bir Todo ekleme isteği geldi. Başlık: {Title}", newTodo.Title);
             if (_todos.Count >= _appSettings.MaksimumTodoSayisi)
             {
-                throw new Exception($"{_appSettings.UygulamaAdi} kapasitesi doldu! En fazla {_appSettings.MaksimumTodoSayisi} görev eklenebilir.");
+                _logger.LogWarning("DİKKAT: Todo kapasitesi ({Kapasite}) doldu. İstek reddedildi!", _appSettings.MaksimumTodoSayisi);
+                throw new Exception($"{_appSettings.UygulamaAdi} kapasitesi doldu!");
             }
             newTodo.Id = _todos.Any() ? _todos.Max(t => t.Id) + 1 : 1;
             _todos.Add(newTodo);

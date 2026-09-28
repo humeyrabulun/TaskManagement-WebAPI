@@ -133,6 +133,11 @@ namespace TodoApi.Controllers
 
             return NoContent();
         }
+        [HttpGet("test-error")]
+        public IActionResult TestError()
+        {
+            throw new Exception("planlı bir test patlamasıdır");
 
+        }
     }
 }

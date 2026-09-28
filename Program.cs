@@ -1,3 +1,4 @@
+using TodoApi.Middlewares;
 using TodoApi.Models;
 using TodoApi.Services;
 using static TodoApi.Services.GuidService;
@@ -17,6 +18,8 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSet
 
 var app = builder.Build();
 
+app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<RequestTimingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -31,5 +34,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();
