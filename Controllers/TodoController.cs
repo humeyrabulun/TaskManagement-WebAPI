@@ -39,17 +39,17 @@ namespace TodoApi.Controllers
 
 
         [HttpGet]
-        public IActionResult GetTodos([FromQuery] bool? tamamlandi, [FromQuery] string? ara)
+        public async Task<IActionResult> GetTodos([FromQuery] bool? tamamlandi, [FromQuery] string? ara)
         {
-            var sonucListe = _todoService.GetTodos(tamamlandi, ara);
+            var sonucListe = await _todoService.GetTodosAsync(tamamlandi, ara);
 
             return Ok(sonucListe);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetTodo(int id)
+        public async Task<IActionResult> GetTodo(int id)
         {
-            var sonuc = _todoService.GetTodo(id);
+            var sonuc = await _todoService.GetTodoAsync(id);
 
             if (sonuc == null)
             {
@@ -60,7 +60,7 @@ namespace TodoApi.Controllers
 
         [HttpPost]
 
-        public IActionResult CreateTodo(Todo newTodo)
+        public async Task<IActionResult> CreateTodo(Todo newTodo)
         {
             if (string.IsNullOrWhiteSpace(newTodo.Title))
             {
@@ -69,7 +69,7 @@ namespace TodoApi.Controllers
 
             try
             {
-                var createdTodo = _todoService.CreateTodo(newTodo);
+                var createdTodo = await _todoService.CreateTodoAsync(newTodo);
                 return CreatedAtAction(nameof(GetTodo), new { id = createdTodo.Id }, createdTodo);
             }
             catch (Exception ex)
@@ -106,9 +106,9 @@ namespace TodoApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateTodo(int id, Todo updatedTodo)
+        public async Task<IActionResult> UpdateTodo(int id, Todo updatedTodo)
         {
-            var sonuc = _todoService.UpdateTodo(id, updatedTodo);
+            var sonuc = await _todoService.UpdateTodoAsync(id, updatedTodo);
 
             if (sonuc == null)
             {
@@ -120,10 +120,10 @@ namespace TodoApi.Controllers
 
         }
         [HttpDelete("{id}")]
-        public IActionResult DeleteTodo(int id)
+        public async Task<IActionResult> DeleteTodo(int id)
         {
 
-            bool isDeleted = _todoService.DeleteTodo(id);
+            bool isDeleted = await _todoService.DeleteTodoAsync(id);
 
             if (!isDeleted)
             {
@@ -134,7 +134,7 @@ namespace TodoApi.Controllers
             return NoContent();
         }
         [HttpGet("test-error")]
-        public IActionResult TestError()
+        public async Task<IActionResult> TestError()
         {
             throw new Exception("planlı bir test patlamasıdır");
 

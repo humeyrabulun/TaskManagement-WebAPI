@@ -1,7 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using TodoApi.Middlewares;
 using TodoApi.Models;
 using TodoApi.Services;
 using static TodoApi.Services.GuidService;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,9 @@ builder.Services.AddScoped<IScopedService , GuidService>();
 builder.Services.AddTransient<ITransientService, GuidService>();
 builder.Services.AddSingleton<ISingletonService, GuidService>();
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var app = builder.Build();
 

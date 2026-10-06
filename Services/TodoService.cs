@@ -1,25 +1,29 @@
 ﻿using TodoApi.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+
 
 
 namespace TodoApi.Services
 {
     public class TodoService
     {
-        private static List<Todo> _todos = new List<Todo>();
+        private readonly AppDbContext _context;
+
         private readonly AppSettings _appSettings;
 
         private readonly ILogger<TodoService> _logger;
 
-        public TodoService(IOptions<AppSettings> options,ILogger<TodoService> logger)
+        public TodoService(AppDbContext context,IOptions<AppSettings> options,ILogger<TodoService> logger)
         {
             _appSettings = options.Value;
             _logger = logger;
+            _context = context;
         }
-       
-        public List<Todo>GetTodos( bool? tamamlandi, string? ara)
+
+        public async Task<List<Todo>> GetTodosAsync(bool? tamamlandi, string? ara)
         {
-            var sorgu = _todos.AsQueryable();
+            var sorgu = _context.Todos.AsQueryable();
 
             if (tamamlandi.HasValue)
             {
@@ -32,53 +36,59 @@ namespace TodoApi.Services
                 sorgu = sorgu.Where(t => t.Title.Contains(ara));
             }
 
-            return sorgu.ToList();
+            return await sorgu.ToListAsync();
         }
 
-        public Todo GetTodo(int id)
+        public async Task<Todo> GetTodoAsync(int id)
         {
 
-            var todo = _todos.FirstOrDefault(t => t.Id == id);
-            return (todo);
+            return await _context.Todos.FindAsync(id);
         }
 
      
-        public Todo CreateTodo(Todo newTodo)
+        public async Task<Todo> CreateTodoAsync(Todo newTodo)
         {
+
+            
+
             _logger.LogInformation("Yeni bir Todo ekleme isteği geldi. Başlık: {Title}", newTodo.Title);
-            if (_todos.Count >= _appSettings.MaksimumTodoSayisi)
+            if (await _context.Todos.CountAsync() >= _appSettings.MaksimumTodoSayisi)
             {
                 _logger.LogWarning("DİKKAT: Todo kapasitesi ({Kapasite}) doldu. İstek reddedildi!", _appSettings.MaksimumTodoSayisi);
                 throw new Exception($"{_appSettings.UygulamaAdi} kapasitesi doldu!");
             }
-            newTodo.Id = _todos.Any() ? _todos.Max(t => t.Id) + 1 : 1;
-            _todos.Add(newTodo);
+            await _context.Todos.AddAsync(newTodo);
+            await _context.SaveChangesAsync(); 
             return newTodo;
 
         }
 
    
-        public Todo UpdateTodo(int id, Todo updatedTodo)
+        public async Task<Todo> UpdateTodoAsync(int id, Todo updatedTodo)
         {
-            var todo = _todos.FirstOrDefault(t => t.Id == id);
-            return updatedTodo;
+            
+
+            var todo = await _context.Todos.FindAsync(id);
 
             if (todo == null) return null;
 
             todo.Title = updatedTodo.Title;
             todo.IsCompleted = updatedTodo.IsCompleted;
 
+            await _context.SaveChangesAsync();
+
             return todo;
         }
 
 
-        public bool DeleteTodo(int id)
+        public async Task<bool> DeleteTodoAsync(int id)
         {
-            var todo = _todos.FirstOrDefault(t => t.Id == id);
+            var todo = await _context.Todos.FindAsync(id);
 
-            if (todo==null) return false;
+            if (todo == null) return false;
 
-            _todos.Remove(todo);
+            _context.Todos.Remove(todo);
+            await _context.SaveChangesAsync();
             return true;
 
          
